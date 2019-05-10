@@ -40,17 +40,16 @@ pubs = clnt.places(**query)['features'] # Perform the actual request and get inn
 
 # Amount of pubs in Kreuzberg
 print("\nAmount of pubs: {}".format(len(pubs)))
-print(pubs[0])
+print("Closest pub: ",pubs[0])
 
 
 
-
-map_hooray = folium.Map(location=[48, 1],
+map_hooray = folium.Map(location=[aoi_centroid.xy[1][0], aoi_centroid.xy[0][0]],
                         tiles='Stamen Terrain',
                         zoom_start = 11)
 
-folium.Circle([48, 1],
-                    radius=6000,
+folium.Circle([aoi_centroid.xy[1][0], aoi_centroid.xy[0][0]],
+                    radius=600,
                     popup='Trial Marker',
                     color='blue',
                     ).add_to(map_hooray)
