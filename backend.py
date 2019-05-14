@@ -11,7 +11,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from openrouteservice import client, places
+from openrouteservice import client, places, geocode, distance_matrix
 from shapely import wkt, geometry
 from shapely.geometry.point import Point
 
@@ -56,3 +56,39 @@ folium.Circle([aoi_centroid.xy[1][0], aoi_centroid.xy[0][0]],
 
 
 map_hooray.save('Map_trial.html')
+
+#Add Kreuzberg polygon as marker to map for orientation
+folium.vector_layers.Polygon(aoi_coords,
+                             color='#ffd699',
+                             fill_color='#ffd699',
+                             fill_opacity=0.2,
+                             weight=3).add_to(map_hooray)
+map_hooray.save('Map_trial.html')
+
+
+pubs_addresses = []
+
+for feat in pubs:
+    lon, lat = feat['geometry']['coordinates']
+    name = clnt.pelias_reverse(point=(lon, lat))['features'][0]['properties']['name']
+    popup = "<strong>{0}</strong><br>Lat: {1:.3f}<br>Long: {2:.3f}".format(name, lat, lon)
+    icon = folium.map.Icon(color='lightgray',
+                        icon_color='#b5231a',
+                        icon='beer', # fetches font-awesome.io symbols
+                        prefix='fa')
+    folium.map.Marker([lat, lon], icon=icon, popup=popup).add_to(map_hooray)
+    pubs_addresses.append(name)
+    
+# folium.map.LayerControl().add_to(map_hooray)
+
+
+pubs_coords = [feat['geometry']['coordinates'] for feat in pubs]
+
+request = {'locations': pubs_coords,
+           'profile': 'driving-car',
+           'metrics': ['duration']}
+
+#Find distance between all pubs  
+pubs_matrix = clnt.distance_matrix(**request)
+print("Calculated {}x{} routes.".format(len(pubs_matrix['durations']),len(pubs_matrix['durations'][0])))
+print(pubs_matrix)
